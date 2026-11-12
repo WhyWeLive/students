@@ -4,6 +4,6 @@ const application = new ApplicationModule().init().start();
 
 export default {
     fetch: application.fetch,
-    port: 8081
-}
+    port: 8082,
+};
 
