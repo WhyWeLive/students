@@ -1,6 +1,7 @@
 import { ApplicationModule } from "./modules/application.module";
 
-const application = new ApplicationModule().init().server();
+// CHANGED
+const application = new ApplicationModule().init().start();
 
 export default {
     fetch: application.fetch,

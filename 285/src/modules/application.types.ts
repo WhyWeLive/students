@@ -1,5 +1,11 @@
 export type ApplicationEnvironment = {
-    Variables: {}
+    Variables: {
+        user: UserType; // CHANGED
+    }
+
+    Bindings: {
+        JWT_SECRET: string; // CHANGED
+    }
 }
 
 export type ApplicationResult<T> = ApplicationSuccessResult<T> | ApplicationFailedResult;
