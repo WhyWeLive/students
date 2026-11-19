@@ -69,5 +69,33 @@ describe("Пользователи", () => {
 			expect(response.status).toBe(401);
 			expect(await response.json()).toMatchObject({ success: false, error: "BAD AUTH" });
 		});
+
+		test("поддельная подпись возвращает 401", async () => {
+			const fakeToken = await sign({ sub: "1" }, "FakeSecret", "HS256");
+			const response = await client.get(path, fakeToken);
+
+			expect(response.status).toBe(401);
+		});
+
+		test("просроченный токен возвращает 401", async () => {
+			const expiredToken = await sign({
+				sub: "1",
+				exp: Math.floor(Date.now() / 1000) - 60,
+			}, bindings.JWT_SECRET);
+
+			const response = await client.get(path, expiredToken);
+
+			expect(response.status).toBe(401);
+		});
+
+		test("токен удаленного пользователя возвращает 401", async () => {
+			database.run('DELETE FROM users WHERE id = 1');
+			const response = await client.get(path, token);
+
+			expect(response.status).toBe(401);
+		});
+
+
+		// test("", async () => { });
 	});
 });
