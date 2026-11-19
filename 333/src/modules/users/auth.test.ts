@@ -90,8 +90,29 @@ describe("Авторизация", () => {
 		});
 	});
 
-	test("неверный пароль возвращает 401", async () => {});
-	test("без токена возвращает 401", async () => {});
-	test("некорректный токен возвращает 401", async () => {});
+	test("неверный пароль возвращает 401", async () => {
+		await client.post("/api/auth/register", account);
 
+		const response = await client.post("/api/auth/auth", {
+			email: account.email,
+			password: "gfdijogjdfoigjidf"
+		});
+
+		expect(response.status).toBe(401);
+		expect(await response.json()).toMatchObject({
+			success: false,
+		});
+	});
+
+	test("без токена возвращает 401", async () => {
+		expect(
+			(await client.me()).status
+		).toBe(401);
+	});
+
+	test("некорректный токен возвращает 401", async () => {
+		expect(
+			(await client.me("ABRACADABRA")).status
+		).toBe(401);
+	});
 });
