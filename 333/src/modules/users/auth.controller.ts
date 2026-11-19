@@ -14,7 +14,7 @@ import {
   type UserType,
 } from "./users.types";
 import { createJWT } from "../../utils/jwt";
-import { decode } from "hono/jwt";
+import { verify } from "hono/jwt";
 import { ApplicationValidator } from "../application.validator";
 
 export class AuthController {
@@ -108,9 +108,15 @@ export class AuthController {
       return c.json({ success: false, error: "BAD AUTH" }, 401);
     }
 
-    const { payload } = decode(header?.[1] ?? "");
-    const userId = Number(payload.sub);
+    const { JWT_SECRET } = env<ApplicationEnviroment["Bindings"]>(c);
+    let userId: number;
 
+    try {
+      const payload = await verify(header[1] ?? "", JWT_SECRET, "HS256");
+      userId = Number(payload.sub);
+    } catch {
+      return c.json({ success: false, error: "BAD AUTH" }, 401);
+    }
 
     const user = this.repository.findById(userId);
 

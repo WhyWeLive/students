@@ -1,5 +1,5 @@
-import { success, z } from "zod";
-import type { ValidationTargets } from "hono";
+import { z } from "zod";
+import type { Context, ValidationTargets } from "hono";
 import { zValidator } from "@hono/zod-validator";
 
 export class ApplicationValidator {
@@ -12,10 +12,13 @@ export class ApplicationValidator {
 
   public static onValidate(result: {
     success: boolean;
-    error?: unknown;
-  }): void {
+    error?: {message: string};
+  }, c: Context) {
     if (!result.success) {
-      throw result.error;
+      return c.json({
+        success: false,
+        error: result.error?.message ?? "Invalid input",
+      }, 400);
     }
   }
 }
