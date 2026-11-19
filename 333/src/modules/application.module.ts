@@ -22,9 +22,12 @@ export class ApplicationModule {
     const postsRouter = this.posts.init();
 
     this.server.use('*', validate);
+
     this.server.route("/api/users", usersRouter);
     this.server.route("/api/auth", authRouter);
     this.server.route("/api/posts", postsRouter);
+
+    this.server.route("/posts", postsRouter);
 
     return this;
   }
