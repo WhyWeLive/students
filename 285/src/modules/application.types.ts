@@ -1,3 +1,6 @@
+import z from "zod";
+import type { UserType } from "./users/users.types";
+
 export type ApplicationEnvironment = {
     Variables: {
         user: UserType; // CHANGED
@@ -20,7 +23,9 @@ export type ApplicationFailedResult = {
     error: string;
 }
 
-type DemoType<FirstGeneric, SecondGeneric> = {
-    id: FirstGeneric;
-    title: SecondGeneric;
-}
+export const IDParamSchema = z.object({
+    id: z.string().regex(/^\d+$/, "Id must be number")
+        .transform(value => parseInt(value, 10)),
+});
+
+export type IDParamType = z.infer<typeof IDParamSchema>;
