@@ -1,20 +1,16 @@
-import type { PostsRepository } from "./posts.repository";
 import { Context, Hono, type TypedResponse } from "hono";
+import type { PostsRepository } from "./posts.repository";
 import {
   IDParamSchema,
   type ApplicationEnviroment,
   type ApplicationResult,
   type IDParamType,
 } from "../application.types";
-import { type PostType } from "./posts.types";
 import { ApplicationValidator } from "../application.validator";
+import { postCreateSchema, type PostCreateType, type PostType } from "./posts.types";
 
 export class PostsController {
-  private readonly repository: PostsRepository;
-
-  constructor(repository: PostsRepository) {
-    this.repository = repository;
-  }
+  constructor(private readonly repository: PostsRepository) {}
 
   public routes(): Hono {
     return new Hono()
@@ -23,6 +19,11 @@ export class PostsController {
         "/:id",
         ApplicationValidator.validate("param", IDParamSchema),
         this.findOne.bind(this),
+      )
+      .post(
+        "/",
+        ApplicationValidator.validate("json", postCreateSchema),
+        this.create.bind(this),
       );
   }
 
@@ -43,5 +44,19 @@ export class PostsController {
     }
 
     return c.json({ success: true, data: post });
+  }
+
+  public async create(
+    c: Context<ApplicationEnviroment, "/", { out: { json: PostCreateType } }>,
+  ): Promise<TypedResponse<ApplicationResult<PostType>>> {
+    const { title, content } = c.req.valid("json");
+    const userId = c.get("user").id;
+    const post = this.repository.create(title, content, userId);
+
+    if (!post) {
+      return c.json({ success: false, error: "Post creation failed" }, 500);
+    }
+
+    return c.json({ success: true, data: post }, 201);
   }
 }

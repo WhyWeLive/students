@@ -1,16 +1,18 @@
 import { Database } from "bun:sqlite";
-import { type PostType } from "./posts.types";
+import type { PostType } from "./posts.types";
 
 export class PostsRepository {
-  constructor(private readonly database: Database) { }
+  constructor(private readonly database: Database) {}
 
   public init(): void {
     this.database.run(`
       CREATE TABLE IF NOT EXISTS posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
         content TEXT NOT NULL,
         userId INTEGER NOT NULL,
         FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      );
     `);
   }
 
@@ -24,12 +26,11 @@ export class PostsRepository {
       .get(id);
   }
 
-  public create(content: string, userId: number): PostType | null {
+  public create(title: string, content: string, userId: number): PostType | null {
     return this.database
-      .query<
-        PostType,
-        [string, number]
-      >("INSERT INTO posts (content, userId) VALUES (?, ?) RETURNING id, content, userId")
-      .get(content, userId);
+      .query<PostType, [string, string, number]>(
+        "INSERT INTO posts (title, content, userId) VALUES (?, ?, ?) RETURNING *",
+      )
+      .get(title, content, userId);
   }
 }

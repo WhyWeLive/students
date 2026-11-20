@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { UsersModule } from "./users/users.module";
+import { PostsModule } from "./posts/posts.module";
 import { Database } from "bun:sqlite";
 
 export class ApplicationModule {
@@ -11,6 +12,7 @@ export class ApplicationModule {
   constructor() {
     this.server = new Hono();
     this.database = new Database("platform.sqlite");
+    this.database.run("PRAGMA foreign_keys = ON");
     this.users = new UsersModule(this.database);
     this.posts = new PostsModule(this.database);
   }
@@ -23,6 +25,7 @@ export class ApplicationModule {
 
     this.server.route("/api/users", usersRouter);
     this.server.route("/api/auth", authRouter);
+    this.server.route("/api/posts", postsRouter);
 
     this.server.route("/posts", postsRouter);
 
